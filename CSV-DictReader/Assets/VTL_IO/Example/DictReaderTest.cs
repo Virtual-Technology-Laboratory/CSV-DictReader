@@ -13,7 +13,10 @@ public class DictReaderTest : MonoBehaviour
     {
         DictReader dictReader = new DictReader(resourceLocation);
         foreach (var row in dictReader)
-            Debug.Log(row["FIRSTNAME"] + ", " + row["LASTNAME"] + ", " + 
-                      row["AGE"] + ", " + row["STATE"]);
+            Debug.Log(row["FIRSTNAME"] + ", " + 
+                      row["LASTNAME"] + ", " + 
+                      row["AGE"] + ", " +
+                      row["LOCATION"] + ", " +
+                      row["INCOME"]);
     }
 }

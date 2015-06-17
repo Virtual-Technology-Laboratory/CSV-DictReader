@@ -13,6 +13,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Text.RegularExpressions;
+
 
 namespace VTL.IO
 {
@@ -42,24 +44,47 @@ namespace VTL.IO
 
         }
 
-        public DictReader(string resourceLocation, char delimiter = ',')
+        static string[] SplitCsvLine(string line)
         {
-            char[] sep = new char[] { delimiter };
+            string pattern = @"(((?<x>(?=[,\r\n]+))|""(?<x>([^""]|"""")+)""|(?<x>[^,\r\n]+)),?)";
+              
+            // Instantiate the regular expression object.
+            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
 
+            // Match the regular expression pattern against a text string.
+            Match m = r.Match(line);
+
+            var tokens = new List<string>();
+            while (m.Success)
+            {
+                Group g = m.Groups[2];
+                CaptureCollection cc = g.Captures;
+
+                string c = cc[0].ToString().Trim();
+                if (c.Length > 0)
+                    tokens.Add(c);
+
+                m = m.NextMatch();
+            }
+
+            return tokens.ToArray();
+        }
+
+        public DictReader(string resourceLocation)
+        {
             string text = LoadTextResource(resourceLocation);
             string[] lines = text.Split(new char[] { '\n' });
 
-            string[] header = lines[0].Split(sep);
-
-            for (int j = 0; j < header.Length; j++)
-                header[j] = header[j].Trim();
+            string[] header = SplitCsvLine(lines[0]);
 
             _lines = new List<Dictionary<string, string>>();
             for (int i = 1; i < lines.Length; i++)
             {
-                string[] tokens = lines[i].Split(sep);
+                string[] tokens = SplitCsvLine(lines[i]);
 
-                if (tokens.Length != header.Length)
+                if ((tokens.Length == 0) && (i + 1 == lines.Length))
+                    break; // empty last line (what Excel does by default)
+                else if (tokens.Length != header.Length)
                 {
                     var error = string.Format("DictReader Parsing Error: Expecting {0} cells, found {1}, on line {2} or {3}",
                                               header.Length, tokens.Length, i + 1, lines.Length);
