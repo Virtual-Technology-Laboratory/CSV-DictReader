@@ -45,7 +45,7 @@ namespace VTL.IO
 
         }
 
-        static string[] SplitCsvLine(string line)
+        static string[] SplitCsvLine(string line, bool appendEmpty=true)
         {
             string pattern = @"(((?<x>(?=[,\r\n]+))|""(?<x>([^""]|"""")+)""|(?<x>[^,\r\n]+)),?)";
               
@@ -62,7 +62,15 @@ namespace VTL.IO
                 CaptureCollection cc = g.Captures;
 
                 string c = cc[0].ToString().Trim();
-                if (c.Length > 0)
+
+                // If token is double-quoted then remove the quotes
+                if (c.Length >= 2)
+                    if (c[0] == '"' && c[c.Length - 1] == '"')
+                        c = c.Substring(1, c.Length - 2);
+
+                if (appendEmpty)
+                    tokens.Add(c);
+                else if (c.Length > 0)
                     tokens.Add(c);
 
                 m = m.NextMatch();
@@ -76,7 +84,7 @@ namespace VTL.IO
             string text = LoadTextResource(resourceLocation);
             string[] lines = text.Split(new char[] { '\n' });
 
-            string[] header = SplitCsvLine(lines[0]);
+            string[] header = SplitCsvLine(lines[0], false);
 
             _lines = new List<Dictionary<string, string>>();
             for (int i = 1; i < lines.Length; i++)
@@ -85,7 +93,7 @@ namespace VTL.IO
 
                 if ((tokens.Length == 0) && (i + 1 == lines.Length))
                     break; // empty last line (what Excel does by default)
-                else if (tokens.Length != header.Length)
+                else if (tokens.Length < header.Length)
                 {
                     var error = string.Format("DictReader Parsing Error: Expecting {0} cells, found {1}, on line {2} or {3}",
                                               header.Length, tokens.Length, i + 1, lines.Length);
