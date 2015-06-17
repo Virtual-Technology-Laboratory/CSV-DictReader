@@ -11,6 +11,7 @@ fields and values corresponding to the fields of the row.
 
 Example Getting Started
 -----------------------
+Import the VTL.IO.unitypackage into your project.
 
 Assume you have the following data in a csv format in a file within your assets
 folder Assets\Resources\people\data.csv:
