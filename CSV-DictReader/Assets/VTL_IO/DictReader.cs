@@ -14,6 +14,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Text.RegularExpressions;
+using System.Text;
 
 
 namespace VTL.IO
@@ -98,6 +99,36 @@ namespace VTL.IO
                     _lines[i - 1].Add(header[j], tokens[j]);
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("[ ");
+            for ( int i = 0; i < _lines.Count; i++ )
+            {
+                sb.Append("  { ");
+                int j = 0;
+                foreach (var item in _lines[i])
+                {
+                    sb.Append(string.Format("{0}={1}", item.Key, item.Value));
+
+                    if (j < _lines[i].Count - 1)
+                        sb.Append(", ");
+
+                    j++;
+                }
+                sb.Append(" }");
+
+                if (i < _lines.Count - 1)
+                    sb.Append(",");
+
+                sb.AppendLine();
+            }
+            sb.AppendLine("]");
+
+            return sb.ToString();
         }
 
         // Implementation for the GetEnumerator method.
